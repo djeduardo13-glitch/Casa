@@ -7,6 +7,8 @@ import { Agenda, EventoForm } from './agenda.js';
 import { Pagamenti, PagamentoForm } from './pagamenti.js';
 import { Spesa } from './spesa.js';
 import { Documenti, DocumentoForm } from './documenti.js';
+import { google } from './google.js';
+import { PannelloGoogle } from './gcal.js';
 
 let be;
 try {
@@ -92,6 +94,7 @@ function Profilo({ user, profilo, onFatto, toast, dentroModale }) {
 function Impostazioni({ ctx }) {
   return html`<${Modale} titolo="Il tuo profilo" onChiudi=${ctx.chiudi}>
     <${Profilo} user=${ctx.user} profilo=${ctx.profili[ctx.user.id]} toast=${ctx.toast} dentroModale onFatto=${() => { ctx.toast('Profilo salvato.'); ctx.chiudi(); }} />
+    <${PannelloGoogle} ctx=${ctx} />
     <div class="modulo">
       <p class="tenue piccolo">Accesso come ${ctx.user.email}${be.demo ? ' · modalità prova' : ''}</p>
       <button class="btn" onClick=${() => { ctx.chiudi(); be.auth.signOut(); }}><${Icona} n="esci" size=${18} /> Esci</button>
@@ -110,6 +113,15 @@ function App() {
   const [chiave, setChiave] = useState(null);
   const [documenti, setDocumenti] = useState([]);
   const nascostoDa = useRef(null);
+  const [, setGoogleVer] = useState(0);
+
+  // Google Calendar: carico la libreria e aggiorno se il permesso è ancora valido
+  useEffect(() => {
+    google.avvia();
+    const stop = google.ascolta(() => setGoogleVer((n) => n + 1));
+    if (google.tokenValido) google.caricaEventi().catch(() => {});
+    return stop;
+  }, []);
 
   const toast = useCallback((testo, tipo = 'ok') => {
     const id = Math.random();
@@ -149,6 +161,7 @@ function App() {
       if (nascostoDa.current && Date.now() - nascostoDa.current > BLOCCO_AUTOMATICO_MS) setChiave(null);
       nascostoDa.current = null;
       carica().catch(() => {});
+      if (google.tokenValido) google.caricaEventi().catch(() => {});
     };
     document.addEventListener('visibilitychange', vis);
     return () => { stop(); document.removeEventListener('visibilitychange', vis); };
@@ -178,8 +191,12 @@ function App() {
 
   const profili = useMemo(() => Object.fromEntries((data?.profili || []).map((p) => [p.id, p])), [data?.profili]);
 
+  // eventi Google, senza quelli già presenti nell'app (creati da qui)
+  const giaInApp = new Set((data?.eventi || []).map((e) => e.google_id).filter(Boolean));
+  const gEventi = google.eventi.filter((e) => !giaInApp.has(e.gid));
+
   const ctx = {
-    be, user, data, profili, toast, vai, chiave, setChiave, documenti,
+    be, user, data, profili, toast, vai, chiave, setChiave, documenti, gEventi,
     apri: (v) => setModale(v),
     chiudi: () => setModale(null),
     async esegui(fn, msgOk) {
