@@ -175,3 +175,18 @@ begin
     end;
   end loop;
 end $$;
+
+-- ---------------------------------------------------------------------
+-- 9. Permessi API per gli utenti collegati (i nuovi progetti Supabase
+--    non li danno più in automatico; le regole RLS sopra decidono chi vede cosa)
+-- ---------------------------------------------------------------------
+grant usage on schema public to authenticated;
+grant select, insert, update, delete on
+  public.profili, public.spesa, public.pagamenti, public.eventi, public.cassaforte, public.documenti
+  to authenticated;
+
+-- ---------------------------------------------------------------------
+-- 10. Collegamento appuntamenti ↔ Google Calendar
+-- ---------------------------------------------------------------------
+alter table public.eventi add column if not exists google_id text;
+alter table public.eventi add column if not exists google_cal text;
