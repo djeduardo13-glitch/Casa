@@ -1,8 +1,7 @@
-// Configurazione dell'app.
-// Lasciando vuoti questi due valori l'app funziona in "modalità prova"
-// (dati salvati solo sul browser). Per la versione condivisa incolla qui
-// i valori presi da Supabase → Project Settings → API.
+// Configurazione dell'app (progetto Supabase "casa").
+// La chiave "publishable" è pubblica per progetto: i dati sono protetti
+// dalle regole del database e solo le email autorizzate possono accedervi.
 window.CASA_CONFIG = {
-  SUPABASE_URL: '',       // es. 'https://abcdefgh.supabase.co'
-  SUPABASE_ANON_KEY: '',  // la chiave "anon public" (è pubblica per progetto: i dati sono protetti dalle regole del database)
+  SUPABASE_URL: 'https://mmsruiotjqmrucpblvsm.supabase.co',
+  SUPABASE_ANON_KEY: 'sb_publishable_BLJdYOEwKHCTxFW0g8W5Yg_SPgzXmE3',
 };
