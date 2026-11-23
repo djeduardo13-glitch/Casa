@@ -4,6 +4,7 @@ import { oggi, aggiungiGiorni, giornoLungo, relativo, euro, ora, dataNumerica } 
 import { EventoForm, ordinaEventi } from './agenda.js';
 import { PagamentoForm, segnaPagato, ordinaPerScadenza } from './pagamenti.js';
 import { DocumentoForm, statoDocumento, nomeDocumento } from './documenti.js';
+import { BarraGoogle } from './gcal.js';
 
 const GIORNI = 7;
 
@@ -28,6 +29,10 @@ export function Home({ ctx }) {
   ctx.data.eventi.filter((e) => e.data >= t && e.data <= fine).sort(ordinaEventi).forEach((e) => {
     giorni[idx(e.data)].voci.push({ tipo: 'evento', r: e });
   });
+  ctx.gEventi.filter((e) => e.data >= t && e.data <= fine).forEach((e) => {
+    giorni[idx(e.data)].voci.push({ tipo: 'google', r: e });
+  });
+  giorni.forEach((g) => g.voci.sort((a, b) => (a.r.ora || '').localeCompare(b.r.ora || '')));
   daPagare.filter((p) => p.scadenza && p.scadenza >= t && p.scadenza <= fine).forEach((p) => {
     giorni[idx(p.scadenza)].voci.push({ tipo: 'pagamento', r: p });
   });
@@ -47,6 +52,13 @@ export function Home({ ctx }) {
           <span class="tl-testo"><b>${r.titolo}</b><small>${r.ora ? ora(r.ora) : 'Tutto il giorno'}${r.luogo ? ' · ' + r.luogo : ''}</small></span>
           <${Persona} profili=${ctx.profili} id=${r.creato_da} piccolo />
         </button></li>`;
+    if (tipo === 'google')
+      return html`<li class="tl-voce" key=${'g' + r.gid}>
+        <a href=${r.link} target="_blank" rel="noopener">
+          <span class="tl-icona google" style=${{ color: r.colore }}><${Icona} n="calendario" size=${16} /></span>
+          <span class="tl-testo"><b>${r.titolo}</b><small>${r.ora || 'Tutto il giorno'}${r.luogo ? ' · ' + r.luogo : ''} · Google</small></span>
+          <span class="g-logo">G</span>
+        </a></li>`;
     if (tipo === 'pagamento')
       return html`<li class="tl-voce" key=${r.id}>
         <button onClick=${() => nuovo(PagamentoForm, { pagamento: r })}>
@@ -97,6 +109,7 @@ export function Home({ ctx }) {
 
     <div class="blocco">
       <h3>Prossimi ${GIORNI} giorni</h3>
+      <${BarraGoogle} ctx=${ctx} compatta />
       ${conVoci.length === 0
         ? html`<p class="tenue">Niente in programma. Settimana tranquilla!</p>`
         : conVoci.map((g) => html`<div class="tl-giorno" key=${g.data}>
