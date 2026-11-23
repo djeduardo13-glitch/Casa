@@ -1,5 +1,5 @@
 import { html, useState } from '../vendor/preact-htm.js';
-import { Icona, Autore, Modale, Vuoto, Campo, BottoneAsync } from './ui.js';
+import { Icona, Autore, Modale, Vuoto, Campo, BottoneAsync, Persona } from './ui.js';
 import { oggi, giornoLungo, relativo, ora } from './date.js';
 import { google } from './google.js';
 import { BarraGoogle, VoceGoogle } from './gcal.js';
@@ -81,6 +81,7 @@ export function EventoForm({ ctx, evento, dataIniziale }) {
           ${calScrivibili.map((c) => html`<option value=${c.id}>${c.nome}</option>`)}
         </select>`}
       </div>`}
+      ${evento && html`<div class="info-autore"><${Autore} profili=${ctx.profili} riga=${evento} /></div>`}
       <div class="azioni-modulo">
         ${evento && html`<button type="button" class="btn pericolo" onClick=${elimina}><${Icona} n="cestino" size=${18} /> Elimina</button>`}
         <${BottoneAsync} type="submit" onClick=${salva}>Salva<//>
@@ -94,17 +95,17 @@ export const ordinaEventi = (a, b) => a.data.localeCompare(b.data) || (a.ora || 
 export function VoceEvento({ ctx, e, conData }) {
   return html`<li class="voce">
     <button class="voce-corpo" onClick=${() => ctx.apri(html`<${EventoForm} ctx=${ctx} evento=${e} />`)}>
-      <div class="voce-titolo">
-        <span>${e.titolo}</span>
-        <span class="ora">${e.ora ? ora(e.ora) : 'tutto il giorno'}</span>
-      </div>
-      <div class="voce-meta">
-        ${conData && html`<span class="chip">${relativo(e.data)}</span>`}
-        ${e.luogo && html`<span class="meta"><${Icona} n="luogo" size=${14} /> ${e.luogo}</span>`}
-        ${e.google_id && html`<span class="chip chip-google" title="Anche su Google Calendar">G</span>`}
-      </div>
-      ${e.note && html`<div class="voce-note">${e.note}</div>`}
-      <${Autore} profili=${ctx.profili} riga=${e} />
+      <span class="ev-ora">${e.ora ? html`<b>${ora(e.ora)}</b>` : html`<small>tutto il</small><small>giorno</small>`}</span>
+      <span class="ev-barra c-agenda"></span>
+      <span class="voce-testo">
+        <span class="voce-titolo">${e.titolo}${e.google_id && html`<span class="chip chip-google" title="Anche su Google Calendar">G</span>`}</span>
+        ${(conData || e.luogo) && html`<span class="voce-sotto">
+          ${conData && html`<span>${relativo(e.data)}</span>`}
+          ${e.luogo && html`<span class="meta"><${Icona} n="luogo" size=${13} /> ${e.luogo}</span>`}
+        </span>`}
+        ${e.note && html`<span class="voce-note">${e.note}</span>`}
+      </span>
+      <${Persona} profili=${ctx.profili} id=${e.creato_da} piccolo />
     </button>
   </li>`;
 }

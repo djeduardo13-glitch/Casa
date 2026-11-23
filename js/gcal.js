@@ -24,6 +24,11 @@ export function BarraGoogle({ ctx, compatta }) {
         ctx.esegui(async () => { await p; await google.caricaCalendari(); await google.caricaEventi(); }, 'Google Calendar collegato!');
       }}>Collega</button>
     </div>`;
+  if (compatta)
+    return html`<div class="barra-google compatta">
+      <span class="g-logo">G</span>
+      <button class="btn piccolo" onClick=${() => azione(false)} title=${google.aggiornatoIl ? 'Aggiornato ' + tempoFa(google.aggiornatoIl) : ''}><${Icona} n="ripeti" size=${13} /> Aggiorna</button>
+    </div>`;
   return html`<div class=${'barra-google' + (google.tokenValido ? ' ok' : '')}>
     <span class="g-logo">G</span>
     <span class="testo">${google.aggiornatoIl ? `Google aggiornato ${tempoFa(google.aggiornatoIl)}` : 'Google Calendar'}</span>
@@ -33,18 +38,20 @@ export function BarraGoogle({ ctx, compatta }) {
 
 // Appuntamento che arriva da Google (solo lettura: si apre in Google Calendar)
 export function VoceGoogle({ e, conData }) {
-  return html`<li class="voce voce-google" style=${{ borderLeftColor: e.colore }}>
+  return html`<li class="voce voce-google">
     <a class="voce-corpo" href=${e.link} target="_blank" rel="noopener">
-      <div class="voce-titolo">
-        <span>${e.titolo}</span>
-        <span class="ora">${e.ora || 'tutto il giorno'}</span>
-      </div>
-      <div class="voce-meta">
-        ${conData && html`<span class="chip">${relativo(e.data)}</span>`}
-        ${e.fine && html`<span class="meta">fino a ${relativo(e.fine)}</span>`}
-        ${e.luogo && html`<span class="meta"><${Icona} n="luogo" size=${14} /> ${e.luogo}</span>`}
-      </div>
-      <span class="autore"><span class="pallino mini" style=${{ background: e.colore }}></span> Google · ${e.calNome}</span>
+      <span class="ev-ora">${e.ora ? html`<b>${e.ora}</b>` : html`<small>tutto il</small><small>giorno</small>`}</span>
+      <span class="ev-barra" style=${{ '--c': e.colore }}></span>
+      <span class="voce-testo">
+        <span class="voce-titolo">${e.titolo}</span>
+        <span class="voce-sotto">
+          ${conData && html`<span>${relativo(e.data)}</span>`}
+          <span>${e.calNome}</span>
+          ${e.fine && html`<span>fino a ${relativo(e.fine)}</span>`}
+          ${e.luogo && html`<span class="meta"><${Icona} n="luogo" size=${13} /> ${e.luogo}</span>`}
+        </span>
+      </span>
+      <span class="g-logo">G</span>
     </a>
   </li>`;
 }

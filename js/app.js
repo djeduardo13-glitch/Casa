@@ -2,7 +2,7 @@ import { html, render, useState, useEffect, useMemo, useRef, useCallback } from 
 import { creaBackend, TABELLE } from './backend.js';
 import { decifra } from './crypto.js';
 import { Icona, Modale, Campo, BottoneAsync, COLORI } from './ui.js';
-import { Home } from './home.js';
+import { Home, MenuAggiungi } from './home.js';
 import { Agenda, EventoForm } from './agenda.js';
 import { Pagamenti, PagamentoForm } from './pagamenti.js';
 import { Spesa } from './spesa.js';
@@ -227,6 +227,7 @@ function App() {
   const io = profili[user.id];
 
   const fab = {
+    home: () => ctx.apri(html`<${MenuAggiungi} ctx=${ctx} />`),
     agenda: () => ctx.apri(html`<${EventoForm} ctx=${ctx} />`),
     pagamenti: () => ctx.apri(html`<${PagamentoForm} ctx=${ctx} />`),
     documenti: chiave ? () => ctx.apri(html`<${DocumentoForm} ctx=${ctx} />`) : null,
@@ -234,7 +235,7 @@ function App() {
 
   return html`
     <header class="testata">
-      <h1>${sezione === 'home' ? 'Casa' : titolo}</h1>
+      <h1>${sezione === 'home' ? html`<span class="marchio">Casa</span>` : titolo}</h1>
       ${be.demo && html`<span class="badge-demo">prova</span>`}
       <button class="avatar" style=${{ background: io.colore }} onClick=${() => ctx.apri(html`<${Impostazioni} ctx=${ctx} />`)}
         aria-label="Profilo">${io.nome.charAt(0).toUpperCase()}</button>

@@ -1,5 +1,5 @@
 import { html, useState } from '../vendor/preact-htm.js';
-import { Icona, Autore, Modale, Vuoto, Campo, BottoneAsync, Persona } from './ui.js';
+import { Icona, Autore, Modale, Vuoto, Campo, BottoneAsync } from './ui.js';
 import { oggi, relativo, giorniTra, euro, aggiungiMesi, MESI_RICORRENZA, dataNumerica, tempoFa } from './date.js';
 
 const RICORRENZE = [
@@ -94,6 +94,7 @@ export function PagamentoForm({ ctx, pagamento }) {
       <${Campo} etichetta="Note">
         <textarea value=${f.note} onInput=${set('note')} rows="2" placeholder="Codice bollettino, IBAN, come pagare…"></textarea>
       <//>
+      ${pagamento && html`<div class="info-autore"><${Autore} profili=${ctx.profili} riga=${pagamento} /></div>`}
       <div class="azioni-modulo">
         ${pagamento && html`<button type="button" class="btn pericolo" onClick=${elimina}><${Icona} n="cestino" size=${18} /> Elimina</button>`}
         <${BottoneAsync} type="submit" onClick=${salva}>Salva<//>
@@ -106,26 +107,27 @@ function Pagamento({ ctx, p }) {
   const stato = p.pagato_il ? '' : statoScadenza(p.scadenza);
   return html`<li class=${'voce ' + stato}>
     <button class="voce-corpo" onClick=${() => ctx.apri(html`<${PagamentoForm} ctx=${ctx} pagamento=${p} />`)}>
-      <div class="voce-titolo">
-        <span>${p.titolo}</span>
-        ${p.importo != null && html`<strong class="importo">${euro(p.importo)}</strong>`}
-      </div>
-      <div class="voce-meta">
-        ${p.scadenza && html`<span class=${'chip ' + stato}>
-          ${stato === 'scaduto' ? 'Scaduto ' : 'Scade '}${relativo(p.scadenza)}</span>`}
-        ${p.ricorrenza !== 'nessuna' && html`<span class="chip"><${Icona} n="ripeti" size=${12} /> ${etichettaRicorrenza(p.ricorrenza)}</span>`}
-      </div>
-      ${p.note && html`<div class="voce-note">${p.note}</div>`}
-      ${p.pagato_il
-        ? html`<span class="autore"><${Persona} profili=${ctx.profili} id=${p.pagato_da} piccolo /> Pagato da ${ctx.profili[p.pagato_da]?.nome || 'qualcuno'} · ${tempoFa(p.pagato_il)}</span>`
-        : html`<${Autore} profili=${ctx.profili} riga=${p} />`}
+      <span class=${'ico ' + (p.pagato_il ? 'pagato' : 'c-pagamenti')} style=${p.pagato_il ? { '--c': 'var(--verde)' } : null}>
+        <${Icona} n=${p.pagato_il ? 'check' : 'euro'} size=${18} /></span>
+      <span class="voce-testo">
+        <span class="voce-titolo">${p.titolo}${p.ricorrenza !== 'nessuna' && html`<span class="ricorrente" title=${etichettaRicorrenza(p.ricorrenza)}><${Icona} n="ripeti" size=${13} /></span>`}</span>
+        <span class="voce-sotto">
+          ${p.pagato_il
+            ? html`<span>Pagato da ${ctx.profili[p.pagato_da]?.nome || 'qualcuno'} · ${tempoFa(p.pagato_il)}</span>`
+            : p.scadenza
+              ? html`<span class=${stato}>${stato === 'scaduto' ? 'Scaduto ' : 'Scade '}${relativo(p.scadenza)}</span>`
+              : html`<span>Senza scadenza</span>`}
+          ${p.note && html`<span>${p.note.length > 40 ? p.note.slice(0, 40) + '…' : p.note}</span>`}
+        </span>
+      </span>
+      ${p.importo != null && html`<span class="importo">${euro(p.importo)}</span>`}
     </button>
     ${p.pagato_il
       ? html`<button class="btn-icona" title="Segna come da pagare" aria-label="Segna come da pagare"
           onClick=${() => ctx.esegui(() => ctx.be.update('pagamenti', p.id, { pagato_il: null, pagato_da: null }), 'Rimesso in "Da pagare".')}>
-          <${Icona} n="annulla" /></button>`
-      : html`<button class="btn-pagato" onClick=${() => segnaPagato(ctx, p)} aria-label="Segna come pagato">
-          <${Icona} n="check" size=${18} /> Pagato</button>`}
+          <${Icona} n="annulla" size=${18} /></button>`
+      : html`<button class="btn-pagato tondo" onClick=${() => segnaPagato(ctx, p)} aria-label="Segna come pagato" title="Segna come pagato">
+          <${Icona} n="check" size=${18} /></button>`}
   </li>`;
 }
 

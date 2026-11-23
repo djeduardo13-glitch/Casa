@@ -167,6 +167,7 @@ export function DocumentoForm({ ctx, doc }) {
       <${Campo} etichetta="Numero / targa"><input value=${f.numero} onInput=${set('numero')} autocomplete="off" /><//>
       <${Campo} etichetta="Note"><textarea value=${f.note} onInput=${set('note')} rows="2" placeholder="Dove si rinnova, cosa serve…"></textarea><//>
       <p class="suggerimento"><${Icona} n="lucchetto" size=${14} /> Tutto tranne la data di scadenza viene cifrato.</p>
+      ${doc && html`<div class="info-autore"><${Autore} profili=${ctx.profili} riga=${doc} /></div>`}
       <div class="azioni-modulo">
         ${doc && html`<button type="button" class="btn pericolo" onClick=${elimina}><${Icona} n="cestino" size=${18} /> Elimina</button>`}
         <${BottoneAsync} type="submit" onClick=${salva}>Salva<//>
@@ -198,14 +199,16 @@ export function Documenti({ ctx }) {
         const st = statoDocumento(d.scadenza);
         return html`<li class=${'voce doc-' + st} key=${d.id}>
           <button class="voce-corpo" onClick=${() => d.info ? ctx.apri(html`<${DocumentoForm} ctx=${ctx} doc=${d} />`) : ctx.toast('Documento non leggibile con questa password.', 'errore')}>
-            <div class="voce-titolo"><span>${nomeDocumento(d.info)}</span></div>
-            <div class="voce-meta">
-              <span class=${'chip ' + st}>${ETICHETTE_STATO[st]}</span>
-              <span class="meta">Scade il ${dataNumerica(d.scadenza)} (${relativo(d.scadenza)})</span>
-            </div>
-            ${d.info?.numero && html`<div class="voce-note mono">${d.info.numero}</div>`}
-            ${d.info?.note && html`<div class="voce-note">${d.info.note}</div>`}
-            <${Autore} profili=${ctx.profili} riga=${d} />
+            <span class="ico c-documenti"><${Icona} n="documento" size=${18} /></span>
+            <span class="voce-testo">
+              <span class="voce-titolo">${nomeDocumento(d.info)}</span>
+              <span class="voce-sotto">
+                <span>Scade il ${dataNumerica(d.scadenza)}</span>
+                ${d.info?.numero && html`<span class="mono">${d.info.numero}</span>`}
+              </span>
+              ${d.info?.note && html`<span class="voce-note">${d.info.note}</span>`}
+            </span>
+            <span class=${'chip ' + st}>${st === 'scaduto' ? 'Scaduto' : st === 'ok' ? 'In regola' : relativo(d.scadenza).startsWith('tra') || relativo(d.scadenza) === 'oggi' || relativo(d.scadenza) === 'domani' ? relativo(d.scadenza) : `tra ${giorniTra(oggi(), d.scadenza)} giorni`}</span>
           </button>
         </li>`;
       })}

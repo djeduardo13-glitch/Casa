@@ -1,7 +1,7 @@
 // Service worker: rende l'app installabile e veloce da aprire.
 // Strategia "prima la rete": se c'è connessione prende sempre la versione aggiornata,
 // altrimenti usa la copia salvata. Le chiamate a Supabase non vengono mai salvate.
-const CACHE = 'casa-v2';
+const CACHE = 'casa-v3';
 const FILE = [
   './', 'index.html', 'styles.css', 'config.js', 'manifest.webmanifest',
   'vendor/preact-htm.js', 'vendor/supabase.js',
