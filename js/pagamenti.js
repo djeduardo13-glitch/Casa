@@ -1,6 +1,7 @@
 import { html, useState } from '../vendor/preact-htm.js';
 import { Icona, Autore, Modale, Vuoto, Campo, BottoneAsync } from './ui.js';
 import { oggi, relativo, giorniTra, euro, aggiungiMesi, MESI_RICORRENZA, dataNumerica, tempoFa } from './date.js';
+import { ListaPiani } from './piani.js';
 
 const RICORRENZE = [
   ['nessuna', 'Una volta sola'],
@@ -135,12 +136,21 @@ export const ordinaPerScadenza = (a, b) =>
   (a.scadenza || '9999-12-31').localeCompare(b.scadenza || '9999-12-31') || a.titolo.localeCompare(b.titolo);
 
 export function Pagamenti({ ctx }) {
-  const [vista, setVista] = useState('da');
+  const vista = ctx.vistaPag;
+  const setVista = ctx.setVistaPag;
+  const nPiani = (ctx.data.piani || []).filter((p) => p.stato !== 'fatto').length;
   const tutti = ctx.data.pagamenti;
   const daPagare = tutti.filter((p) => !p.pagato_il).sort(ordinaPerScadenza);
   const pagati = tutti.filter((p) => p.pagato_il).sort((a, b) => b.pagato_il.localeCompare(a.pagato_il)).slice(0, 50);
   const totale = daPagare.reduce((s, p) => s + (Number(p.importo) || 0), 0);
   const scaduti = daPagare.filter((p) => statoScadenza(p.scadenza) === 'scaduto').length;
+
+  const segmenti = html`<div class="segmenti">
+      <button class=${vista === 'da' ? 'attivo' : ''} onClick=${() => setVista('da')}>Da pagare (${daPagare.length})</button>
+      <button class=${vista === 'pagati' ? 'attivo' : ''} onClick=${() => setVista('pagati')}>Pagati</button>
+      <button class=${vista === 'piani' ? 'attivo' : ''} onClick=${() => setVista('piani')}>Piani${nPiani ? ` (${nPiani})` : ''}</button>
+    </div>`;
+  if (vista === 'piani') return html`<div>${segmenti}<${ListaPiani} ctx=${ctx} /></div>`;
 
   return html`<section>
     <div class="riepilogo">
@@ -148,10 +158,7 @@ export function Pagamenti({ ctx }) {
       <div><span class="etichetta">Voci</span><strong>${daPagare.length}</strong>
         ${scaduti > 0 && html`<span class="chip scaduto">${scaduti} scadut${scaduti === 1 ? 'o' : 'i'}</span>`}</div>
     </div>
-    <div class="segmenti">
-      <button class=${vista === 'da' ? 'attivo' : ''} onClick=${() => setVista('da')}>Da pagare (${daPagare.length})</button>
-      <button class=${vista === 'pagati' ? 'attivo' : ''} onClick=${() => setVista('pagati')}>Pagati</button>
-    </div>
+    ${segmenti}
     ${vista === 'da'
       ? daPagare.length
         ? html`<ul class="lista">${daPagare.map((p) => html`<${Pagamento} key=${p.id} ctx=${ctx} p=${p} />`)}</ul>`
