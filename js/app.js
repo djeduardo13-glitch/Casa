@@ -6,6 +6,7 @@ import { Home, MenuAggiungi } from './home.js';
 import { Agenda, EventoForm } from './agenda.js';
 import { Pagamenti, PagamentoForm } from './pagamenti.js';
 import { PianoForm } from './piani.js';
+import { temaScelto, impostaTema } from './tema.js';
 import { Spesa } from './spesa.js';
 import { Documenti, DocumentoForm } from './documenti.js';
 import { google } from './google.js';
@@ -93,9 +94,21 @@ function Profilo({ user, profilo, onFatto, toast, dentroModale }) {
   return html`<div class="accesso"><h1>Benvenuto!</h1><p class="tenue">Come ti chiami?</p>${corpo}</div>`;
 }
 
+function SceltaTema() {
+  const [t, setT] = useState(temaScelto());
+  const scegli = (v) => { impostaTema(v); setT(v); };
+  return html`<div class="campo"><span>Aspetto</span>
+    <div class="segmenti stretto">
+      ${[['giorno', 'Giorno'], ['notte', 'Notte'], ['auto', 'Automatico']].map(([k, v]) => html`<button type="button" class=${t === k ? 'attivo' : ''} onClick=${() => scegli(k)}>${v}</button>`)}
+    </div>
+    <p class="suggerimento">Automatico segue le impostazioni del telefono. La scelta vale per questo dispositivo.</p>
+  </div>`;
+}
+
 function Impostazioni({ ctx }) {
   return html`<${Modale} titolo="Il tuo profilo" onChiudi=${ctx.chiudi}>
     <${Profilo} user=${ctx.user} profilo=${ctx.profili[ctx.user.id]} toast=${ctx.toast} dentroModale onFatto=${() => { ctx.toast('Profilo salvato.'); ctx.chiudi(); }} />
+    <div class="modulo pannello-tema"><${SceltaTema} /></div>
     <${PannelloGoogle} ctx=${ctx} />
     <div class="modulo">
       <p class="tenue piccolo">Accesso come ${ctx.user.email}${be.demo ? ' · modalità prova' : ''}</p>
