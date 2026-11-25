@@ -5,6 +5,7 @@ import { Icona, Modale, Campo, BottoneAsync, COLORI } from './ui.js';
 import { Home, MenuAggiungi } from './home.js';
 import { Agenda, EventoForm } from './agenda.js';
 import { Pagamenti, PagamentoForm } from './pagamenti.js';
+import { PianoForm } from './piani.js';
 import { Spesa } from './spesa.js';
 import { Documenti, DocumentoForm } from './documenti.js';
 import { google } from './google.js';
@@ -18,6 +19,7 @@ try {
     <button class="btn primario" onclick="location.reload()">Riprova</button></div>`;
   throw e;
 }
+const OPZIONALI = ['piani', 'piani_voci'];
 const BLOCCO_AUTOMATICO_MS = 5 * 60 * 1000; // la cassaforte si chiude dopo 5 min in background
 
 const SEZIONI = [
@@ -109,6 +111,7 @@ function App() {
   const [data, setData] = useState(null);
   const [sezione, setSezione] = useState(() => location.hash.slice(1) || 'home');
   const [modale, setModale] = useState(null);
+  const [vistaPag, setVistaPag] = useState('da');
   const [avvisi, setAvvisi] = useState([]);
   const [chiave, setChiave] = useState(null);
   const [documenti, setDocumenti] = useState([]);
@@ -138,7 +141,8 @@ function App() {
   // Dati + aggiornamenti in tempo reale
   const carica = useCallback(async (tabella) => {
     const tabelle = !tabella || tabella === '*' ? TABELLE : [tabella];
-    const righe = await Promise.all(tabelle.map((t) => be.list(t)));
+    // piani e piani_voci sono facoltative: se mancano su Supabase l'app funziona lo stesso
+    const righe = await Promise.all(tabelle.map((t) => (OPZIONALI.includes(t) ? be.list(t).catch(() => []) : be.list(t))));
     setData((d) => ({ ...(d || {}), ...Object.fromEntries(tabelle.map((t, i) => [t, righe[i]])) }));
   }, []);
 
@@ -197,7 +201,8 @@ function App() {
 
   const ctx = {
     be, user, data, profili, toast, vai, chiave, setChiave, documenti, gEventi,
-    apri: (v) => setModale(v),
+    vistaPag, setVistaPag,
+    apri: (v) => setModale(() => v),
     chiudi: () => setModale(null),
     async esegui(fn, msgOk) {
       try { await fn(); if (msgOk) toast(msgOk); return true; }
@@ -229,7 +234,7 @@ function App() {
   const fab = {
     home: () => ctx.apri(html`<${MenuAggiungi} ctx=${ctx} />`),
     agenda: () => ctx.apri(html`<${EventoForm} ctx=${ctx} />`),
-    pagamenti: () => ctx.apri(html`<${PagamentoForm} ctx=${ctx} />`),
+    pagamenti: vistaPag === 'piani' ? () => ctx.apri(html`<${PianoForm} ctx=${ctx} />`) : () => ctx.apri(html`<${PagamentoForm} ctx=${ctx} />`),
     documenti: chiave ? () => ctx.apri(html`<${DocumentoForm} ctx=${ctx} />`) : null,
   }[sezione];
 
@@ -247,7 +252,7 @@ function App() {
         <${Icona} n=${s.id === 'documenti' && chiave ? 'aperto' : s.icona} size=${22} /><span>${s.nome}</span>
       </button>`)}
     </nav>
-    ${modale}
+    ${typeof modale === 'function' ? modale(ctx) : modale}
     ${avvisiEl}
   `;
 }
