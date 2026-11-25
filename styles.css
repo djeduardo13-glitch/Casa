@@ -383,3 +383,73 @@ input[type="date"], input[type="time"] { color-scheme: dark; }
 .pericolo-testo { color: var(--rosso); display: block; margin: 8px auto 0; }
 .voce-sotto > span { display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
 .vp-meta > .persona { flex: 0 0 auto; }
+
+/* =====================================================================
+   Tema GIORNO — colori neutri e caldi, non troppo forti
+   ===================================================================== */
+[data-tema="giorno"] {
+  --sfondo: #f5f3ef;
+  --carta: #ffffff;
+  --carta2: #f3f0ea;
+  --bordo: rgba(40, 32, 20, .09);
+  --testo: #24272e;
+  --tenue: #757a85;
+  --oro: #a37a35;
+  --oro-chiaro: rgba(163, 122, 53, .11);
+  --rosso: #c4483f;
+  --rosso-chiaro: rgba(196, 72, 63, .09);
+  --arancio: #b5651d;
+  --arancio-chiaro: rgba(181, 101, 29, .10);
+  --giallo: #93740f;
+  --giallo-chiaro: rgba(147, 116, 15, .10);
+  --verde: #2f855a;
+  --verde-chiaro: rgba(47, 133, 90, .10);
+  --c-agenda: #3d8799;
+  --c-pagamenti: #a37a35;
+  --c-spesa: #c0623f;
+  --c-documenti: #7466c2;
+  --c-piani: #4a9170;
+  --ombra: 0 1px 2px rgba(40, 32, 20, .05), 0 8px 24px rgba(40, 32, 20, .06);
+  color-scheme: light;
+}
+[data-tema="giorno"] body::before { background: radial-gradient(80% 100% at 50% -20%, rgba(163, 122, 53, .07), transparent 70%); }
+[data-tema="giorno"] .testata { background: linear-gradient(var(--sfondo) 60%, rgba(245, 243, 239, 0)); }
+[data-tema="giorno"] .avatar { box-shadow: 0 0 0 2px var(--sfondo), 0 0 0 3px rgba(40, 32, 20, .12); }
+[data-tema="giorno"] .navbar { background: rgba(255, 255, 255, .9); }
+[data-tema="giorno"] .navbar button { color: #9da1aa; }
+[data-tema="giorno"] .navbar button.attivo { color: var(--oro); }
+[data-tema="giorno"] .fab { box-shadow: 0 10px 24px rgba(163, 122, 53, .28); }
+[data-tema="giorno"] .campo input::placeholder, [data-tema="giorno"] .campo textarea::placeholder,
+[data-tema="giorno"] .aggiungi-veloce input::placeholder, [data-tema="giorno"] .nuova-voce input::placeholder,
+[data-tema="giorno"] .nuova-voce textarea::placeholder { color: #a7abb3; }
+[data-tema="giorno"] input[type="date"], [data-tema="giorno"] input[type="time"] { color-scheme: light; }
+[data-tema="giorno"] .avviso { background: #2b2e35; color: #fff; border-color: transparent; }
+[data-tema="giorno"] .avviso.errore { background: #c4483f; color: #fff; }
+[data-tema="giorno"] .velo { background: rgba(30, 25, 15, .32); }
+[data-tema="giorno"] .foglio { background: var(--sfondo); }
+[data-tema="giorno"] .foglio::before { background: rgba(40, 32, 20, .15); }
+[data-tema="giorno"] .campo input, [data-tema="giorno"] .campo select, [data-tema="giorno"] .campo textarea,
+[data-tema="giorno"] .aggiungi-veloce input { background: var(--carta); }
+[data-tema="giorno"] .segmenti { background: var(--carta2); }
+[data-tema="giorno"] .segmenti button.attivo { background: var(--carta); box-shadow: 0 1px 3px rgba(40, 32, 20, .1); }
+[data-tema="giorno"] .riepilogo { background: linear-gradient(160deg, #fbf6ec, var(--carta) 70%); border-color: rgba(163, 122, 53, .2); }
+[data-tema="giorno"] .oggi { background: linear-gradient(160deg, #fbf5ea, #ffffff 60%); border-color: rgba(163, 122, 53, .22); }
+[data-tema="giorno"] .blocco.allarme { background: linear-gradient(160deg, #fcefed, var(--carta) 80%); border-color: rgba(196, 72, 63, .2); }
+[data-tema="giorno"] .piani-riepilogo { background: linear-gradient(160deg, #eef7f1, var(--carta) 70%); border-color: rgba(74, 145, 112, .22); }
+[data-tema="giorno"] .lista, [data-tema="giorno"] .blocco, [data-tema="giorno"] .scheda, [data-tema="giorno"] .lista-spesa,
+[data-tema="giorno"] .barra-google:not(.compatta), [data-tema="giorno"] .riepilogo { box-shadow: var(--ombra); }
+[data-tema="giorno"] .giorno-titolo span { color: #a0a4ad; }
+[data-tema="giorno"] .spunta { border-color: rgba(40, 32, 20, .25); color: #fff; }
+[data-tema="giorno"] .piano-descr, [data-tema="giorno"] .vp-testo { color: #4a4e57; }
+[data-tema="giorno"] .aggiungi-tipo button { border-color: rgba(40, 32, 20, .18); }
+[data-tema="giorno"] .scegli-file { border-color: rgba(40, 32, 20, .22); }
+[data-tema="giorno"] .barra-cassaforte .btn { background: rgba(255, 255, 255, .75); }
+[data-tema="giorno"] .logo img { box-shadow: 0 10px 30px rgba(40, 32, 20, .15); }
+[data-tema="giorno"] .g-logo, [data-tema="giorno"] .chip-google { box-shadow: 0 0 0 1px var(--bordo); }
+[data-tema="giorno"] .btn-pagato.tondo { border-color: rgba(47, 133, 90, .4); }
+[data-tema="giorno"] .voce-piano.scelto .vp-ico, [data-tema="giorno"] .vp-meta .btn.scelto { color: #fff; }
+[data-tema="giorno"] .nuova-voce input, [data-tema="giorno"] .nuova-voce textarea { background: var(--carta); }
+[data-tema="giorno"] .avviso-info { background: var(--oro-chiaro); }
+.pannello-tema { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--bordo); }
+[data-tema="giorno"] .menu-aggiungi button { background: var(--carta); box-shadow: 0 1px 3px rgba(40, 32, 20, .06); }
+.campo .suggerimento, .campo p { text-transform: none; letter-spacing: normal; font-weight: 400; }
