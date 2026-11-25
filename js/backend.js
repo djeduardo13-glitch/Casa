@@ -1,7 +1,7 @@
 // Strato dati: Supabase (reale, condiviso) oppure "demo" (solo su questo browser).
 // L'interfaccia è la stessa, così l'app non sa quale dei due sta usando.
 
-export const TABELLE = ['profili', 'spesa', 'pagamenti', 'eventi', 'cassaforte', 'documenti'];
+export const TABELLE = ['profili', 'spesa', 'pagamenti', 'eventi', 'cassaforte', 'documenti', 'piani', 'piani_voci'];
 
 const uuid = () =>
   (crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -64,6 +64,18 @@ function supabaseBackend(url, key) {
     async remove(table, id) {
       ok(await sb.from(table).delete().eq('id', id));
     },
+    // --- file allegati (bucket privato "allegati") ---
+    async caricaFile(percorso, file) {
+      ok(await sb.storage.from('allegati').upload(percorso, file, { contentType: file.type || 'application/octet-stream' }));
+    },
+    async urlFile(percorsi) {
+      if (!percorsi.length) return {};
+      const data = ok(await sb.storage.from('allegati').createSignedUrls(percorsi, 3600));
+      return Object.fromEntries(data.filter((d) => d.signedUrl).map((d) => [d.path, d.signedUrl]));
+    },
+    async eliminaFile(percorsi) {
+      if (percorsi.length) ok(await sb.storage.from('allegati').remove(percorsi));
+    },
     subscribe(cb) {
       let ch = sb.channel('casa');
       for (const t of TABELLE) {
@@ -83,6 +95,8 @@ function traduciErrore(msg = '') {
   if (m.includes('password should be at least')) return 'La password deve avere almeno 6 caratteri.';
   if (m.includes('row-level security')) return 'Il tuo account non è autorizzato a usare questa app.';
   if (m.includes('failed to fetch') || m.includes('network')) return 'Nessuna connessione. Riprova tra poco.';
+  if (m.includes('exceeded the maximum') || m.includes('payload too large')) return 'File troppo grande (massimo 20 MB).';
+  if (m.includes('bucket not found')) return 'Archivio file non ancora attivato su Supabase.';
   return msg;
 }
 
@@ -94,13 +108,14 @@ function demoBackend() {
   const DB = 'casa-demo-db';
   const USERS = 'casa-demo-users';
   const SESS = 'casa-demo-session';
+  const FILES = 'casa-demo-files';
   const listeners = new Set();
   const authListeners = new Set();
 
   const read = (k, def) => {
     try { return JSON.parse(localStorage.getItem(k)) ?? def; } catch { return def; }
   };
-  const db = () => read(DB, Object.fromEntries(TABELLE.map((t) => [t, []])));
+  const db = () => ({ ...Object.fromEntries(TABELLE.map((t) => [t, []])), ...read(DB, {}) });
   const save = (data, table) => {
     localStorage.setItem(DB, JSON.stringify(data));
     listeners.forEach((cb) => cb(table));
@@ -169,6 +184,22 @@ function demoBackend() {
       const data = db();
       data[table] = data[table].filter((r) => r.id !== id);
       save(data, table);
+    },
+    async caricaFile(percorso, file) {
+      if (file.size > 2e6) throw new Error('In modalità prova i file possono essere al massimo 2 MB.');
+      const url = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(file); });
+      const f = read(FILES, {}); f[percorso] = url;
+      localStorage.setItem(FILES, JSON.stringify(f));
+    },
+    async urlFile(percorsi) {
+      const f = read(FILES, {});
+      const out = {};
+      for (const p of percorsi) if (f[p]) out[p] = URL.createObjectURL(await (await fetch(f[p])).blob());
+      return out;
+    },
+    async eliminaFile(percorsi) {
+      const f = read(FILES, {}); percorsi.forEach((p) => delete f[p]);
+      localStorage.setItem(FILES, JSON.stringify(f));
     },
     subscribe(cb) {
       listeners.add(cb);
